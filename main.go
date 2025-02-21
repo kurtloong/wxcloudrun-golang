@@ -13,8 +13,6 @@ func main() {
 		panic(fmt.Sprintf("mysql init failed with %+v", err))
 	}
 
-	http.HandleFunc("/", service.IndexHandler)
-	http.HandleFunc("/api/count", service.CounterHandler)
 	http.HandleFunc("/api/get_auth_code", service.GetAuthCodeHandler)
 
 	log.Fatal(http.ListenAndServe(":80", nil))
