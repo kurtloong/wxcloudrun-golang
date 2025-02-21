@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 // JsonResult 返回结构
@@ -14,7 +15,13 @@ type JsonResult struct {
 }
 
 func GetAuthCodeHandler(w http.ResponseWriter, r *http.Request) {
-	auth_code, err := get_auth_code(r)
+	// 获取 path参数 component_appid
+	component_appid := r.URL.Query().Get("component_appid")
+	if component_appid == "" {
+		fmt.Fprint(w, "内部错误")
+		return
+	}
+	auth_code, err := get_auth_code(component_appid)
 	if err != nil {
 		fmt.Fprint(w, "内部错误")
 		return
@@ -22,10 +29,13 @@ func GetAuthCodeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, auth_code)
 }
 
-func get_auth_code(r *http.Request) (string, error) {
+func get_auth_code(component_appid string) (string, error) {
 	// 请求接口 http://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode
 	// 请求方式 POST
-	request, err := http.NewRequest("POST", "http://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode", nil)
+	request_body := fmt.Sprintf(`{"component_appid":"%s"}`, component_appid)
+	request, err := http.NewRequest("POST", "http://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode", strings.NewReader(request_body))
+	request.Header.Set("Content-Type", "application/json")
+	
 	if err != nil {
 		return "", err
 	}
